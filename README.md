@@ -17,11 +17,28 @@ PharmaFind is building the future of pharmacy logistics—where medication avail
 
 ## Features
 
-- Live map of pharmacy locations and inventory
-- Expiry notifications and automated stock recommendations
-- Decentralized data model for trust and transparency
-- Scalable backend API and AI-driven services
-- Comprehensive test suite for reliability
+## Smart Contract Security Analysis
+
+### PharmacyInventory.sol
+
+- Uses access control by associating inventory updates with msg.sender (pharmacy address).
+- Emits events for stock changes and expiry alerts, supporting transparency and monitoring.
+- Potential risks: No explicit access control for querying inventory; relies on public mapping. Consider adding role-based access for sensitive operations.
+- Expiry alerts are based on block timestamps; ensure off-chain systems handle notifications securely.
+
+### PrescriptionNFT.sol
+
+- Uses OpenZeppelin's ERC721 and Ownable for secure NFT issuance and ownership management.
+- Only contract owner can mint prescriptions, reducing unauthorized minting risk.
+- Prescription data is linked to tokenId, with checks for token existence.
+- Potential risks: Ensure only trusted parties are set as contract owner. Consider adding more granular access control for pharmacy operations.
+- No direct transfer restrictions; if needed, implement transfer hooks to prevent unauthorized prescription transfers.
+
+### General Recommendations
+
+- Use OpenZeppelin libraries for standard security.
+- Regularly audit contracts for reentrancy, overflow, and access control issues.
+- Monitor and log all critical events for transparency.
 
 ## How to Use
 
