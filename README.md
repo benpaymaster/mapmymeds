@@ -6,16 +6,60 @@
 
 PharmaFind is building the future of pharmacy logistics—where medication availability, expiry management, and transparency are powered by blockchain and AI. Our mission is to reduce waste, improve access, and empower both customers and pharmacy staff with real-time, trustworthy data.
 
-## What Makes PharmaFind Unique?
-
-- **Decentralized Inventory & Expiry Management:** Smart contracts (`PharmacyInventory.sol`, `PrescriptionNFT.sol`) ensure secure, transparent, and scalable data for every pharmacy and medication.
-- **AI-Driven Backend:** FastAPI and Python services deliver real-time location, expiry alerts, and automated recommendations.
-- **Scalable Distributed Systems:** Designed for multi-branch, multi-stakeholder use, with robust performance and reliability.
-- **Secure, Gas-Efficient Contracts:** Built with best practices for Solidity security and gas optimization.
-- **Automated Testing:** Comprehensive unit and integration tests for smart contracts, backend, and frontend features.
-- **Collaboration & Documentation:** Modular, well-documented codebase, ready for team growth and open innovation.
-
 ## Features
+
+- Live map of pharmacy locations and inventory
+- Expiry notifications and automated stock recommendations
+- Decentralized data model for trust and transparency
+- Scalable backend API and AI-driven services
+- Comprehensive test suite for reliability
+
+## File Architecture
+
+```
+pharma-ai-web3/
+├── ai/                  # Python FastAPI backend & AI services
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── models/
+│   └── services/
+├── contracts/           # Solidity smart contracts
+│   ├── PharmacyInventory.sol
+│   └── PrescriptionNFT.sol
+├── frontend/            # React frontend
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── components/
+│   │   │   ├── PharmacyMap.jsx
+│   │   │   └── ...
+│   │   ├── data/
+│   │   └── hooks/
+│   ├── public/
+│   └── ...
+├── scripts/             # Deployment and interaction scripts
+├── tests/               # Unit and integration tests
+│   ├── ai/
+│   ├── frontend/
+│   └── smart_contracts/
+└── README.md
+```
+
+## How to Clone & Run
+
+```bash
+git clone https://github.com/benpaymaster/pharmafind.git
+cd pharma-ai-web3
+# Backend (Python FastAPI)
+cd ai
+pip install -r requirements.txt
+python main.py
+# Frontend (React)
+cd ../frontend
+npm install
+npm start
+```
+
+Access the frontend at http://localhost:3000 and backend API at http://localhost:8000.
 
 ## Smart Contract Security Analysis
 
@@ -39,23 +83,6 @@ PharmaFind is building the future of pharmacy logistics—where medication avail
 - Use OpenZeppelin libraries for standard security.
 - Regularly audit contracts for reentrancy, overflow, and access control issues.
 - Monitor and log all critical events for transparency.
-
-## How to Use
-
-1. Clone the repository and install dependencies.
-2. Start the backend API and frontend app.
-3. Explore the live map, search for medication, and view expiry alerts.
-
-## Startup Workflow
-
-1. **Build New Features:** Smart contracts, backend APIs, and frontend components
-2. **Test Features:** Unit and integration tests for all layers
-3. **Push Changes:** Commit and push updates to GitHub
-4. **Update README:** Document new features and architecture decisions
-
-## Why PharmaFind?
-
-PharmaFind is a showcase of senior-level Solidity, distributed systems, and AI integration skills—delivering a production-grade Dapp for real-world impact.
 
 ---
 
