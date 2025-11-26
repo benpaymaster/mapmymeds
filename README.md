@@ -1,5 +1,14 @@
 # PharmaFind
 
+![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+
+# PharmaFind
+
 **A decentralized platform for real-time pharmacy inventory and expiry management. Uses Solidity smart contracts, distributed systems, and AI to help users locate medication, reduce waste, and optimize stock with a live map, expiry alerts, and secure, scalable backend.**
 
 ## Vision
@@ -93,41 +102,3 @@ Access the frontend at http://localhost:3000 and backend API at http://localhost
 ## Vision
 
 PharmaFind is building the future of pharmacy logistics—where medication availability, expiry management, and transparency are powered by blockchain and AI. Our mission is to reduce waste, improve access, and empower both customers and pharmacy staff with real-time, trustworthy data.
-
-## What Makes PharmaFind Unique?
-
-- **Decentralized Inventory & Expiry Management:** Smart contracts (`PharmacyInventory.sol`, `PrescriptionNFT.sol`) ensure secure, transparent, and scalable data for every pharmacy and medication.
-- **AI-Driven Backend:** FastAPI and Python services deliver real-time location, expiry alerts, and automated recommendations.
-- **Scalable Distributed Systems:** Designed for multi-branch, multi-stakeholder use, with robust performance and reliability.
-- **Secure, Gas-Efficient Contracts:** Built with best practices for Solidity security and gas optimization.
-- **Automated Testing:** Comprehensive unit and integration tests for smart contracts, backend, and frontend features.
-- **Collaboration & Documentation:** Modular, well-documented codebase, ready for team growth and open innovation.
-
-## Senior Solidity Developer Skills Demonstrated
-
-- Advanced smart contract design, optimization, and security
-- Distributed system architecture for real-time, multi-branch data
-- AI integration for automated decision support
-- Full-stack engineering: frontend, backend, and blockchain
-- Rigorous testing and documentation
-- Secure coding and cryptographic principles
-
-## Features
-
-- Live map of pharmacy locations and inventory
-- Expiry notifications and automated stock recommendations
-- Decentralized data model for trust and transparency
-- Scalable backend API and AI-driven services
-- Comprehensive test suite for reliability
-
-## How to Use
-
-1. Clone the repository and install dependencies.
-2. Start the backend API and frontend app.
-3. Explore the live map, search for medication, and view expiry alerts.
-
-## Why PharmaFind?
-
-PharmaFind is a showcase of senior-level Solidity, distributed systems, and AI integration skills—delivering a production-grade Dapp for real-world impact.
-
----
