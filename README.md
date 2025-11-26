@@ -1,50 +1,89 @@
-## Skills Demonstrated
+# PharmaFind
 
-- **Solidity & Smart Contracts:** Design, optimization, and security for decentralized applications.
-- **Distributed Systems:** Scalable architecture for real-time, multi-branch inventory management.
-- **AI Integration:** Backend services for automated expiry management and location tracking.
-- **Testing & Documentation:** Comprehensive test suites and clear code comments.
+**A decentralized platform for real-time pharmacy inventory and expiry management. Uses Solidity smart contracts, distributed systems, and AI to help users locate medication, reduce waste, and optimize stock with a live map, expiry alerts, and secure, scalable backend.**
+
+## Vision
+
+PharmaFind is building the future of pharmacy logistics—where medication availability, expiry management, and transparency are powered by blockchain and AI. Our mission is to reduce waste, improve access, and empower both customers and pharmacy staff with real-time, trustworthy data.
+
+## What Makes PharmaFind Unique?
+
+- **Decentralized Inventory & Expiry Management:** Smart contracts (`PharmacyInventory.sol`, `PrescriptionNFT.sol`) ensure secure, transparent, and scalable data for every pharmacy and medication.
+- **AI-Driven Backend:** FastAPI and Python services deliver real-time location, expiry alerts, and automated recommendations.
+- **Scalable Distributed Systems:** Designed for multi-branch, multi-stakeholder use, with robust performance and reliability.
+- **Secure, Gas-Efficient Contracts:** Built with best practices for Solidity security and gas optimization.
+- **Automated Testing:** Comprehensive unit and integration tests for smart contracts, backend, and frontend features.
+- **Collaboration & Documentation:** Modular, well-documented codebase, ready for team growth and open innovation.
+
+## Features
+
+- Live map of pharmacy locations and inventory
+- Expiry notifications and automated stock recommendations
+- Decentralized data model for trust and transparency
+- Scalable backend API and AI-driven services
+- Comprehensive test suite for reliability
+
+## How to Use
+
+1. Clone the repository and install dependencies.
+2. Start the backend API and frontend app.
+3. Explore the live map, search for medication, and view expiry alerts.
+
+## Startup Workflow
+
+1. **Build New Features:** Smart contracts, backend APIs, and frontend components
+2. **Test Features:** Unit and integration tests for all layers
+3. **Push Changes:** Commit and push updates to GitHub
+4. **Update README:** Document new features and architecture decisions
+
+## Why PharmaFind?
+
+PharmaFind is a showcase of senior-level Solidity, distributed systems, and AI integration skills—delivering a production-grade Dapp for real-world impact.
 
 ---
 
-## Workflow: Build, Test, Push, Update
+# PharmaFind
 
-1. **Build New Features**
+**A decentralized platform for real-time pharmacy inventory and expiry management. Uses Solidity smart contracts, distributed systems, and AI to help users locate medication, reduce waste, and optimize stock with a live map, expiry alerts, and secure, scalable backend.**
 
-   - Develop smart contracts in `contracts/` (Solidity)
-   - Implement backend APIs and AI services in `ai/`
-   - Create and enhance frontend features in `frontend/`
+## Vision
 
-2. **Test Features**
+PharmaFind is building the future of pharmacy logistics—where medication availability, expiry management, and transparency are powered by blockchain and AI. Our mission is to reduce waste, improve access, and empower both customers and pharmacy staff with real-time, trustworthy data.
 
-   - Run unit and integration tests for smart contracts (`tests/smart_contracts/`)
-   - Test backend APIs and AI logic (`tests/ai/`)
-   - Test frontend components and UI (`tests/frontend/`)
+## What Makes PharmaFind Unique?
 
-3. **Push Changes**
+- **Decentralized Inventory & Expiry Management:** Smart contracts (`PharmacyInventory.sol`, `PrescriptionNFT.sol`) ensure secure, transparent, and scalable data for every pharmacy and medication.
+- **AI-Driven Backend:** FastAPI and Python services deliver real-time location, expiry alerts, and automated recommendations.
+- **Scalable Distributed Systems:** Designed for multi-branch, multi-stakeholder use, with robust performance and reliability.
+- **Secure, Gas-Efficient Contracts:** Built with best practices for Solidity security and gas optimization.
+- **Automated Testing:** Comprehensive unit and integration tests for smart contracts, backend, and frontend features.
+- **Collaboration & Documentation:** Modular, well-documented codebase, ready for team growth and open innovation.
 
-   - Commit all code and documentation updates
-   - Push to GitHub for review and collaboration
+## Senior Solidity Developer Skills Demonstrated
 
-4. **Update README**
-   - Document new features, architecture decisions, and test coverage
-   - Summarize alignment with GenLayer Labs' requirements
+- Advanced smart contract design, optimization, and security
+- Distributed system architecture for real-time, multi-branch data
+- AI integration for automated decision support
+- Full-stack engineering: frontend, backend, and blockchain
+- Rigorous testing and documentation
+- Secure coding and cryptographic principles
 
----
+## Features
 
-# GenLayer Labs Solidity & AI Integration Showcase
+- Live map of pharmacy locations and inventory
+- Expiry notifications and automated stock recommendations
+- Decentralized data model for trust and transparency
+- Scalable backend API and AI-driven services
+- Comprehensive test suite for reliability
 
-## Project Summary & Job Alignment
+## How to Use
 
-This project demonstrates expertise in decentralized application development, smart contract engineering, and AI-driven backend integration. It is designed as a real-world Dapp for pharmacy inventory and expiry management, leveraging Solidity smart contracts, scalable distributed systems, and secure coding practices. The architecture and workflow directly align with GenLayer Labs' mission to build trust infrastructure for the AI Age and support Optimistic Democracy consensus.
+1. Clone the repository and install dependencies.
+2. Start the backend API and frontend app.
+3. Explore the live map, search for medication, and view expiry alerts.
 
-### Key Features & Alignment
+## Why PharmaFind?
 
-- **Decentralized Inventory & Expiry Management:** Uses Solidity smart contracts (`PharmacyInventory.sol`, `PrescriptionNFT.sol`) for secure, transparent, and scalable data management.
-- **AI-Driven Backend:** Integrates FastAPI and Python AI services for real-time location, expiry notifications, and automated decision support.
-- **Scalable Distributed Systems:** Designed for multi-branch, multi-stakeholder use, with a focus on performance and reliability.
-- **Secure, Gas-Efficient Contracts:** Follows best practices for Solidity security and gas optimization.
-- **Automated Testing:** Comprehensive unit and integration tests for both smart contracts and frontend/backend features.
-- **Documentation & Collaboration:** Well-documented codebase, open to code review and team feedback.
+PharmaFind is a showcase of senior-level Solidity, distributed systems, and AI integration skills—delivering a production-grade Dapp for real-world impact.
 
 ---
