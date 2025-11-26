@@ -1,0 +1,21 @@
+[
+  {
+    "name": "Boots Cardiff Queen Street",
+    "address": "36 Queen St, Cardiff CF10 2AG",
+    "latitude": 51.4837,
+    "longitude": -3.1701
+  },
+  {
+    "name": "Well Pharmacy Cardiff Central",
+    "address": "Unit 1, Central Square, Cardiff CF10 1FS",
+    "latitude": 51.4781,
+    "longitude": -3.1805
+  },
+  {
+    "name": "Lloyds Pharmacy Cardiff Bay",
+    "address": "Unit 2, Mermaid Quay, Cardiff CF10 5BZ",
+    "latitude": 51.4645,
+    "longitude": -3.1651
+  }
+  // ...add more pharmacies as needed
+]
