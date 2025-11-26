@@ -88,17 +88,3 @@ Access the frontend at http://localhost:3000 and backend API at http://localhost
 - No direct transfer restrictions; if needed, implement transfer hooks to prevent unauthorized prescription transfers.
 
 ### General Recommendations
-
-- Use OpenZeppelin libraries for standard security.
-- Regularly audit contracts for reentrancy, overflow, and access control issues.
-- Monitor and log all critical events for transparency.
-
----
-
-# PharmaFind
-
-**A decentralized platform for real-time pharmacy inventory and expiry management. Uses Solidity smart contracts, distributed systems, and AI to help users locate medication, reduce waste, and optimize stock with a live map, expiry alerts, and secure, scalable backend.**
-
-## Vision
-
-PharmaFind is building the future of pharmacy logistics—where medication availability, expiry management, and transparency are powered by blockchain and AI. Our mission is to reduce waste, improve access, and empower both customers and pharmacy staff with real-time, trustworthy data.
