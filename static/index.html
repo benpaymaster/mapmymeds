@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MapMyMeds Protocol MVP</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.5; }
+        .card { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .alert { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>MapMyMeds MVP</h1>
+
+    <div class="card">
+        <h3>1 & 2. Network Inventory Search</h3>
+        <input type="text" id="snomedInput" placeholder="Enter SNOMED Code">
+        <button onclick="performSearch()">Search Global Network</button>
+        <div id="searchResults"></div>
+    </div>
+
+    <div class="card">
+        <h3>3. Expiration & Stock Alerts</h3>
+        <button onclick="checkExpirations()">Scan Network for Expirations</button>
+        <div id="expiryResults"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
