@@ -1,0 +1,34 @@
+# MapMyMeds Protocol - Python Dependencies
+
+# Async HTTP client for FHIR API integration
+httpx>=0.24.0
+
+# FHIR R4 data structures
+fhir.resources>=7.0.0
+
+# Async support
+asyncio>=3.4.3
+
+# FastAPI for customer-facing API
+fastapi>=0.100.0
+uvicorn>=0.23.0
+
+# Data validation
+pydantic>=2.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# Type checking
+mypy>=1.5.0
+
+# Code quality
+black>=23.7.0
+flake8>=6.1.0
+
+# AWS SDK (for infrastructure integration)
+boto3>=1.28.0
+
+# Cryptography for ZK-proof operations
+cryptography>=41.0.0

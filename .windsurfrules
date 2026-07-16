@@ -1,0 +1,23 @@
+# Project Context: MapMyMeds Protocol
+- Project: Automated inter-pharmacy stock routing and financial settlement platform.
+- Architecture: API-First, Stateless Protocol.
+- Tech Stack: Python (matching engine), AWS (infrastructure), FHIR R4 (data standards), REST APIs (PMR integration).
+- Privacy: All inventory discovery and matching is powered by Zero-Knowledge (ZK) proofs to protect pharmacy data privacy.
+
+# Rules for AI Agent (Cascade)
+1. Privacy First: Always prioritize ZK-proof logic for data sensitive operations. Never suggest exposing raw pharmacy inventory data.
+2. Workflow: Do not suggest changes to existing Pharmacy Management Record (PMR) workflows. The solution must be "Zero-Touch" and run in the background.
+3. Standards: Use SNOMED CT codes for all medicine identification. Follow NHS Digital API governance for all integration scripts.
+4. Coding Style: 
+   - Write stateless, modular code.
+   - Every function should have a clear purpose and be easily testable in a sandbox environment.
+   - Favor clean, asynchronous Python for matching engine operations.
+5. Context Management: 
+   - Before suggesting a multi-file edit, check for existing dependencies to avoid breaking the stateless architecture.
+   - If a prompt requires complex architectural changes, explicitly ask for confirmation before modifying more than 3 files.
+
+# Project Structure
+- /src/matching_engine: Core matching logic (Python)
+- /src/api_integration: PMR API scripts (FHIR R4 compliant)
+- /src/settlement: Financial escrow and transaction logic
+- /docs/regulatory: Compliance frameworks and DPA templates
