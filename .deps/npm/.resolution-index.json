@@ -1,0 +1,13 @@
+{
+  "contracts/PharmacyInventory.sol": {
+    "__sources__": {
+      "contracts/PharmacyInventory.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.36;\n\ncontract PharmacyInventory {\n    // We store the Proof (hash) of the inventory status, NOT the quantity.\n    mapping(address => mapping(string => bytes32)) public inventoryProofs;\n\n    event ProofUpdated(address indexed pharmacy, string medication, bytes32 proof);\n\n    // Update with a ZK-Proof instead of raw numbers\n    function updateStockProof(\n        string memory _name,\n        bytes32 _zkProof\n    ) public {\n        inventoryProofs[msg.sender][_name] = _zkProof;\n        emit ProofUpdated(msg.sender, _name, _zkProof);\n    }\n\n    // Publicly verify the proof\n    function getProof(\n        address _pharmacy,\n        string memory _name\n    ) public view returns (bytes32) {\n        return inventoryProofs[_pharmacy][_name];\n    }\n}",
+        "file": "contracts/PharmacyInventory.sol"
+      }
+    }
+  },
+  "scripts/DeployMapMyMeds.s.sol": {
+    "__sources__": {}
+  }
+}
