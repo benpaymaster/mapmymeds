@@ -1,6 +1,6 @@
 """
 Customer-facing medication search with aggregated stock visibility.
-Provides "Google Maps for medication" functionality without exposing exact quantities.
+Refactored for ZK-privacy integration via MapMyMeds Protocol.
 """
 
 from typing import List, Dict, Optional
@@ -10,8 +10,10 @@ import asyncio
 from datetime import datetime, timedelta
 from math import radians, sin, cos, sqrt, asin
 
+# Importing your new protocol modules
+from src.protocol.privacy import ZKPrivacyGuard
+
 class StockStatus(Enum):
-    """Aggregated stock status for customer view."""
     IN_STOCK = "in_stock"
     LOW_STOCK = "low_stock"
     OUT_OF_STOCK = "out_of_stock"
@@ -39,6 +41,7 @@ class CustomerSearchEngine:
     def __init__(self):
         self.pharmacies: Dict[str, PharmacyLocation] = {}
         self.inventory_cache: Dict[str, List[Dict]] = {}
+        self.privacy = ZKPrivacyGuard()
     
     async def search_medication(self, snomed_code: str, user_location: Optional[tuple] = None, radius_km: int = 10, scope: str = "local") -> MedicationAvailability:
         matching_pharmacies = await self._get_matching_pharmacies(snomed_code)
@@ -75,12 +78,20 @@ class CustomerSearchEngine:
     def _aggregate_stock_status(self, pharmacies: List[Dict]) -> List[Dict]:
         aggregated = []
         for pharmacy in pharmacies:
-            status = self._quantity_to_status(pharmacy.get('quantity', 0), pharmacy.get('expiry_date'))
+            raw_qty = pharmacy.get('quantity', 0)
+            is_avail = raw_qty > 0
+            
+            # Privacy Integration: Generate ZK-Proof instead of exposing quantity
+            proof = self.privacy.generate_availability_proof(pharmacy['pharmacy_id'], is_avail)
+            
+            status = self._quantity_to_status(raw_qty, pharmacy.get('expiry_date'))
+            
             aggregated.append({
                 'pharmacy_id': pharmacy['pharmacy_id'],
                 'name': self.pharmacies.get(pharmacy['pharmacy_id'], {}).get('name', 'Unknown'),
                 'address': self.pharmacies.get(pharmacy['pharmacy_id'], {}).get('address', ''),
                 'status': status.value,
+                'proof': proof,  # Proof injected here for the protocol
                 'distance_km': pharmacy.get('distance_km')
             })
         return aggregated
@@ -93,7 +104,7 @@ class CustomerSearchEngine:
                 if expiry - datetime.now() <= timedelta(days=30): return StockStatus.EXPIRING_SOON
             except: pass
         return StockStatus.LOW_STOCK if quantity < 5 else StockStatus.IN_STOCK
-    
+
     def _determine_overall_status(self, aggregated: List[Dict]) -> StockStatus:
         if not aggregated: return StockStatus.OUT_OF_STOCK
         statuses = [item['status'] for item in aggregated]
@@ -124,15 +135,3 @@ class CustomerSearchEngine:
             existing['expiry_date'] = expiry_date
         else:
             self.inventory_cache[snomed_code].append({'pharmacy_id': pharmacy_id, 'quantity': quantity, 'expiry_date': expiry_date})
-
-    def seed_demo_data(self):
-        self.register_pharmacy(PharmacyLocation("armley_01", "Armley Central", "123 Town St", 53.7945, -1.5977))
-        asyncio.run(self.update_inventory("armley_01", "12345", 10, "2027-01-01"))
-
-# Demo script to run if called directly
-if __name__ == "__main__":
-    engine = CustomerSearchEngine()
-    engine.seed_demo_data()
-    result = asyncio.run(engine.search_medication("12345", user_location=(53.7940, -1.5970), radius_km=5))
-    print(f"Search Results for SNOMED 12345: {result.status.value}")
-    print(f"Pharmacies found: {len(result.pharmacies)}")
