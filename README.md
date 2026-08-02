@@ -32,6 +32,7 @@ MapMyMeds enables pharmacies to automatically route stock between locations whil
 
 ## File Architecture
 
+```
 mapmymeds/
 ├── contracts/              # Solidity smart contracts and engine logic
 ├── tests/                  # Foundry smart contract test suites
@@ -43,15 +44,20 @@ mapmymeds/
 ├── static/                 # Prototype assets and interface elements
 └── README.md
 
+```
+
 ## How to Clone & Run
 
+```
 git clone https://github.com/benpaymaster/mapmymeds.git
 cd mapmymeds
 # Install dependencies
 pip install -r requirements.txt
 # Run customer-facing API
 python -m src.api_integration.customer_api
-# Access API at http://localhost:8001
+
+```
+Access API at http://localhost:8001
 
 ## Privacy & Security
 
@@ -72,3 +78,4 @@ python -m src.api_integration.customer_api
 - Escrow-based settlement with proof-of-delivery verification
 - Cryptographic proofs for all transactions
 - Stateless transaction processing
+
