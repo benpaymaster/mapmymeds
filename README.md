@@ -41,6 +41,8 @@ mapmymeds/ ├── contracts/ # Solidity smart contracts and engine logic ├�
 
 ## How to Clone & Run
 
+## How to Clone & Run
+
 ```bash
 git clone [https://github.com/benpaymaster/mapmymeds.git](https://github.com/benpaymaster/mapmymeds.git)
 cd mapmymeds
