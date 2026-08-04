@@ -35,6 +35,7 @@ MapMyMeds enables pharmacies to automatically route stock between locations whil
 ```
 mapmymeds/
 ├── contracts/              # Solidity smart contracts and engine logic
+├── frontend/               # React/Vite MVP user interface
 ├── tests/                  # Foundry smart contract test suites
 ├── src/                    # Core Python backend and matching modules
 │   ├── matching_engine/    # ZK-proof powered B2B matching
@@ -58,6 +59,16 @@ python -m src.api_integration.customer_api
 
 ```
 Access API at http://localhost:8001
+
+## Run the Frontend MVP
+
+```
+cd frontend
+npm install
+npm run dev
+
+```
+Access the UI at http://localhost:5173
 
 ## Privacy & Security
 
