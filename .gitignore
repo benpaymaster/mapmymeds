@@ -2,8 +2,13 @@
 # Foundry
 /cache/
 /out/
-/broadcast/.env
+/broadcast/
+.env
 venv/
 __pycache__/
 *.pyc
 node_modules/
+
+# Personal working docs
+MapMyMedsBried.md
+Web3Engineer_Brief.md
