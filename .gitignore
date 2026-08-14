@@ -2,4 +2,8 @@
 # Foundry
 /cache/
 /out/
-/broadcast/
+/broadcast/.env
+venv/
+__pycache__/
+*.pyc
+node_modules/
