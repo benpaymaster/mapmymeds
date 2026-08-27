@@ -5,7 +5,7 @@ import L from 'leaflet';
 
 /**
  * Expects `rows` in the exact shape PatientView already computes:
- *   [{ node: {id, postcode, pharmacy, area, lat, lng, phone}, stock: {level, trend, cost}, distanceMi }]
+ *   [{ node: {id, postcode, pharmacy, area, lat, lng, phone}, stock: {level, trend, cost, history}, distanceMi }]
  * so this stays a pure presentation layer — no data logic duplicated here.
  */
 
@@ -14,14 +14,15 @@ const LEVEL_COLOR = {
   low: '#fbbf24',    // amber-400
   medium: '#34d399', // emerald-400
   high: '#34d399',
+  unreported: '#64748b', // slate-500 — a real pharmacy with no stock data yet, not a status color
 };
 
-const LEVEL_LABEL = { out: 'Out of stock', low: 'Low stock', medium: 'In stock', high: 'Well stocked' };
+const LEVEL_LABEL = { out: 'Out of stock', low: 'Low stock', medium: 'In stock', high: 'Well stocked', unreported: 'Not yet reporting' };
 const TREND_ARROW = { rising: '▲', falling: '▼', steady: '–' };
 const TREND_COLOR = { rising: '#34d399', falling: '#fb7185', steady: '#94a3b8' };
 
 function pharmacyIcon(stock) {
-  const color = LEVEL_COLOR[stock.level];
+  const color = LEVEL_COLOR[stock.level] || LEVEL_COLOR.unreported;
   // Falling + low/out gets a pulsing ring — the same "don't drive over for nothing" signal as the card warning.
   const urgent = stock.trend === 'falling' && (stock.level === 'low' || stock.level === 'out');
   const ring = urgent
@@ -95,6 +96,7 @@ export default function MapView({ rows, medName, userCoords, selectedNodeId, onS
 
         {rows.map(({ node, stock, distanceMi }) => {
           const driveMin = Math.max(2, Math.round(distanceMi * 3));
+          const hasTrendData = stock.history && stock.history.length > 1;
           return (
             <Marker
               key={node.id}
@@ -110,13 +112,20 @@ export default function MapView({ rows, medName, userCoords, selectedNodeId, onS
                     {distanceMi} mi · ~{driveMin} min drive
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-                    <span style={{ color: LEVEL_COLOR[stock.level], fontWeight: 600, fontSize: 12 }}>
-                      {LEVEL_LABEL[stock.level]}
+                    <span style={{ color: LEVEL_COLOR[stock.level] || LEVEL_COLOR.unreported, fontWeight: 600, fontSize: 12 }}>
+                      {LEVEL_LABEL[stock.level] || LEVEL_LABEL.unreported}
                     </span>
-                    <span style={{ color: TREND_COLOR[stock.trend], fontWeight: 600, fontSize: 12 }}>
-                      {TREND_ARROW[stock.trend]} {stock.trend}
-                    </span>
+                    {hasTrendData && (
+                      <span style={{ color: TREND_COLOR[stock.trend], fontWeight: 600, fontSize: 12 }}>
+                        {TREND_ARROW[stock.trend]} {stock.trend}
+                      </span>
+                    )}
                   </div>
+                  {stock.level === 'unreported' && (
+                    <div style={{ marginTop: 6, fontSize: 11, color: '#94a3b8', lineHeight: 1.4 }}>
+                      This pharmacy hasn't connected live stock reporting yet.
+                    </div>
+                  )}
                   {stock.trend === 'falling' && (stock.level === 'low' || stock.level === 'out') && (
                     <div style={{ marginTop: 6, fontSize: 11, color: '#fda4af', lineHeight: 1.4 }}>
                       Stock is dropping — call ahead before you travel.

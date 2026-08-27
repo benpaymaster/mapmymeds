@@ -497,9 +497,19 @@ function PharmacistView({ requests, createRequest, respondRequest, completeReque
   const incomingOffers = requests.filter(
     (r) => r.receiverNodeId === ownNodeId && r.initiatedBy === "holder" && r.status === "pending"
   );
-  const myOutgoing = requests.filter(
-    (r) => (r.initiatedBy === "receiver" && r.receiverNodeId === ownNodeId) || (r.initiatedBy === "holder" && r.holderNodeId === ownNodeId)
-  ).sort((a, b) => b.createdAt - a.createdAt);
+  // Everything I'm party to, as either holder or receiver — not just requests I personally
+  // initiated. Pending items I still need to act on are excluded here since they already
+  // appear in the approval panels above; everything else (including transfers I *approved*
+  // for someone else, which used to vanish the moment I clicked Approve) shows up here.
+  const myOutgoing = requests.filter((r) => {
+    const involved = r.holderNodeId === ownNodeId || r.receiverNodeId === ownNodeId;
+    if (!involved) return false;
+    if (r.status === "pending") {
+      const needsMyApproval = (r.initiatedBy === "receiver" && r.holderNodeId === ownNodeId) || (r.initiatedBy === "holder" && r.receiverNodeId === ownNodeId);
+      return !needsMyApproval;
+    }
+    return true;
+  }).sort((a, b) => b.createdAt - a.createdAt);
 
   function handleRespond(req, action) {
     respondRequest(req.id, action);
@@ -687,11 +697,11 @@ function PharmacistView({ requests, createRequest, respondRequest, completeReque
 
       {myOutgoing.length > 0 && (
         <div className="mt-4">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Your requests</p>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Your transfers</p>
           <div className="space-y-2">
             {myOutgoing.map((r) => {
-              const counterpartId = r.initiatedBy === "receiver" ? r.holderNodeId : r.receiverNodeId;
-              const counterpart = NODES.find((n) => n.id === counterpartId);
+              const iAmHolder = r.holderNodeId === ownNodeId;
+              const counterpart = NODES.find((n) => n.id === (iAmHolder ? r.receiverNodeId : r.holderNodeId));
               const statusStyle = {
                 pending: "text-amber-300",
                 accepted: "text-emerald-300",
@@ -700,18 +710,26 @@ function PharmacistView({ requests, createRequest, respondRequest, completeReque
                 unavailable: "text-slate-500",
               }[r.status];
               const statusLabel = { pending: "Pending", accepted: "Approved", completed: "Received", rejected: "Declined", unavailable: "No longer available" }[r.status];
-              const canMarkReceived = r.status === "accepted" && r.initiatedBy === "receiver" && r.receiverNodeId === ownNodeId;
-              const canMarkReceivedOffer = r.status === "accepted" && r.initiatedBy === "holder" && r.receiverNodeId === ownNodeId;
+              // Only the receiving side confirms receipt — whether they initiated the request
+              // themselves or were the one who accepted an offer someone else sent them.
+              const canMarkReceived = r.status === "accepted" && !iAmHolder;
+
+              let actionLabel;
+              if (iAmHolder && r.initiatedBy === "receiver") actionLabel = `${counterpart?.pharmacy ?? "—"} requested this from you`;
+              else if (iAmHolder && r.initiatedBy === "holder") actionLabel = `you offered this to ${counterpart?.pharmacy ?? "no match yet"}`;
+              else if (!iAmHolder && r.initiatedBy === "receiver") actionLabel = `you requested this from ${counterpart?.pharmacy}`;
+              else actionLabel = `${counterpart?.pharmacy ?? "—"} offered this to you`;
+
               return (
                 <div key={r.id} className="flex items-center justify-between rounded-lg bg-slate-900/40 border border-slate-800 px-3 py-2.5 text-sm">
                   <span className="text-slate-300">
                     {MEDS.find((m) => m.id === r.medId).name}
                     {r.quantity ? <> · {r.quantity} packs</> : null}
-                    {" · "}{r.initiatedBy === "receiver" ? `requested from ${counterpart?.pharmacy}` : `offered to ${counterpart?.pharmacy ?? "—"}`}
+                    {" · "}{actionLabel}
                     {r.expiryDate ? <> · expires <b className="text-amber-300">{r.expiryDate}</b></> : null}
                   </span>
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    {(canMarkReceived || canMarkReceivedOffer) && (
+                    {canMarkReceived && (
                       <button onClick={() => handleComplete(r)} className="text-xs font-medium text-emerald-300 border border-emerald-400/40 rounded-lg px-2 py-1 hover:bg-emerald-500/10">
                         Mark as received
                       </button>
@@ -873,6 +891,13 @@ function ExpiryModal({ defaultMedId, ownNodeId, onClose, onSubmit }) {
 
 export default function App() {
   const [role, setRole] = useState("patient");
+  // KNOWN LIMITATION (documented, not fixed — deferred post-pilot):
+  // once a request for a given holder+medication is accepted, that pairing shows as
+  // permanently "Claimed" for the rest of the session. There's no restock/re-list
+  // lifecycle, so a second legitimate transfer of the same medication from the same
+  // pharmacy later in the week will look blocked rather than genuinely unavailable.
+  // Fine for a short pilot test window; needs a real expiry/restock model before
+  // pharmacies run this continuously.
   const [requests, setRequests] = useState([]);
   const [signedInNodeId, setSignedInNodeId] = useState(null);
 
