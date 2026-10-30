@@ -1,0 +1,6 @@
+[package]
+name = "transfer_compliance"
+type = "bin"
+authors = ["Adegbenga (Ben) Ogungbeje"]
+
+[dependencies]

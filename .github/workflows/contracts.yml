@@ -1,0 +1,53 @@
+name: contracts
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  foundry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.5.1 # pinned so lints and formatting match local builds
+      - name: Format
+        run: forge fmt --check
+      - name: Build (warnings fail the build)
+        run: forge build --sizes --deny-warnings
+      - name: Test (unit, fuzz, invariant)
+        run: forge test -vvv
+        env:
+          FOUNDRY_PROFILE: ci
+      - name: Gas diff against committed snapshot (informational)
+        run: forge snapshot --diff --no-match-contract Invariant
+
+  slither:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: crytic/slither-action@v0.4.1
+        with:
+          target: .
+          slither-config: slither.config.json
+          fail-on: medium
+
+  circuit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: noir-lang/noirup@v0.1.4
+        with:
+          toolchain: 1.0.0-beta.15
+      - name: Test circuit
+        working-directory: circuits/transfer_compliance
+        run: nargo test

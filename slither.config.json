@@ -1,0 +1,5 @@
+{
+  "filter_paths": "lib|tests|script",
+  "exclude_dependencies": true,
+  "detectors_to_exclude": "timestamp,assembly,cyclomatic-complexity"
+}

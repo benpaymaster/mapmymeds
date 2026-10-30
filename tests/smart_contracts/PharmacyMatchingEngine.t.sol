@@ -1,108 +1,277 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.33;
+pragma solidity 0.8.33;
 
-import "forge-std/Test.sol";
-import "../../contracts/PharmacyMatchingEngine.sol";
-import "../../contracts/IPharmacyRegistry.sol";
+import {Base} from "./utils/Base.t.sol";
+import {PharmacyMatchingEngine} from "../../contracts/PharmacyMatchingEngine.sol";
+import {IComplianceVerifier} from "../../contracts/interfaces/IComplianceVerifier.sol";
+import {MockComplianceVerifier} from "./utils/MockComplianceVerifier.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
-// Mock Registry for testing access control
-contract MockPharmacyRegistry is IPharmacyRegistry {
-    mapping(address => bool) public verifiedPharmacies;
+contract PharmacyMatchingEngineTest is Base {
+    // ------------------------------------------------------------------ createListing
 
-    function setVerified(address pharmacy, bool status) external {
-        verifiedPharmacies[pharmacy] = status;
+    function test_createListing_storesPackedListing() public {
+        uint64 expiry = uint64(block.timestamp + 7 days);
+        vm.prank(everest);
+        uint256 id = engine.createListing(COMMITMENT, expiry);
+
+        (address supplier, uint64 expiresAt, PharmacyMatchingEngine.Status status, bytes32 commitment) =
+            engine.listings(id);
+        assertEq(id, 0);
+        assertEq(supplier, everest);
+        assertEq(expiresAt, expiry);
+        assertEq(uint8(status), uint8(PharmacyMatchingEngine.Status.Active));
+        assertEq(commitment, COMMITMENT);
+        assertTrue(engine.isOpen(id));
     }
 
-    function isVerifiedPharmacy(address pharmacy) external view override returns (bool) {
-        return verifiedPharmacies[pharmacy];
-    }
-}
-
-contract PharmacyMatchingEngineTest is Test {
-    PharmacyMatchingEngine public matchingEngine;
-    MockPharmacyRegistry public registry;
-
-    address public pharmacyA = address(0x1);
-    address public pharmacyB = address(0x2);
-    address public unverifiedUser = address(0x3);
-
-    event ListingCreated(uint256 indexed listingId, address indexed pharmacy, bytes32 indexed medicationHash);
-    event MatchFulfilled(uint256 indexed listingId, address indexed fulfiller, bytes32 complianceProof);
-
-    function setUp() public {
-        registry = new MockPharmacyRegistry();
-        matchingEngine = new PharmacyMatchingEngine(address(registry));
-
-        // Set up verified pharmacies
-        registry.setVerified(pharmacyA, true);
-        registry.setVerified(pharmacyB, true);
+    function test_listingUsesTwoStorageSlots() public {
+        uint256 id = _list(everest);
+        bytes32 base = keccak256(abi.encode(id, uint256(3))); // `listings` is slot 3: see `forge inspect PharmacyMatchingEngine storageLayout`
+        bytes32 slot0 = vm.load(address(engine), base);
+        bytes32 slot1 = vm.load(address(engine), bytes32(uint256(base) + 1));
+        bytes32 slot2 = vm.load(address(engine), bytes32(uint256(base) + 2));
+        assertEq(address(uint160(uint256(slot0))), everest); // supplier, expiry and status share slot 0
+        assertEq(slot1, COMMITMENT);
+        assertEq(slot2, bytes32(0)); // nothing spills into a third slot
     }
 
-    function test_CreateListing_Success() public {
-        bytes32 medHash = keccak256(abi.encodePacked("Paracetamol_500mg"));
-        uint256 expiry = block.timestamp + 1 days;
-
-        vm.prank(pharmacyA);
-        vm.expectEmit(true, true, true, true);
-        emit ListingCreated(0, pharmacyA, medHash);
-
-        matchingEngine.createListing(medHash, expiry);
-
-        (address owner, bytes32 storedHash, uint256 storedExpiry, bool active) = matchingEngine.listings(0);
-        assertEq(owner, pharmacyA);
-        assertEq(storedHash, medHash);
-        assertEq(storedExpiry, expiry);
-        assertTrue(active);
+    function test_revert_createListing_unverified() public {
+        vm.prank(outsider);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.NotVerifiedPharmacy.selector, outsider));
+        engine.createListing(COMMITMENT, uint64(block.timestamp + 1 days));
     }
 
-    function test_CreateListing_RevertUnverified() public {
-        bytes32 medHash = keccak256(abi.encodePacked("Ibuprofen"));
-        uint256 expiry = block.timestamp + 1 days;
-
-        vm.prank(unverifiedUser);
-        vm.expectRevert("Caller is not a verified pharmacy");
-        matchingEngine.createListing(medHash, expiry);
+    function test_revert_createListing_zeroCommitment() public {
+        vm.prank(everest);
+        vm.expectRevert(PharmacyMatchingEngine.ZeroValue.selector);
+        engine.createListing(bytes32(0), uint64(block.timestamp + 1 days));
     }
 
-    function test_FulfillMatch_Success() public {
-        bytes32 medHash = keccak256(abi.encodePacked("Aspirin"));
-        uint256 expiry = block.timestamp + 1 days;
-
-        vm.prank(pharmacyA);
-        matchingEngine.createListing(medHash, expiry);
-
-        bytes32 proof = keccak256(abi.encodePacked("ZKP_COMPLIANCE_PROOF_123"));
-
-        vm.prank(pharmacyB);
-        vm.expectEmit(true, true, true, true);
-        emit MatchFulfilled(0, pharmacyB, proof);
-
-        matchingEngine.fulfillMatch(0, proof);
-
-        (,,, bool active) = matchingEngine.listings(0);
-        assertFalse(active);
-        assertTrue(matchingEngine.complianceProofUsed(proof));
+    function testFuzz_revert_createListing_badExpiry(uint64 expiry) public {
+        vm.assume(expiry <= block.timestamp || expiry > block.timestamp + engine.MAX_LISTING_DURATION());
+        vm.prank(everest);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.InvalidExpiry.selector, expiry));
+        engine.createListing(COMMITMENT, expiry);
     }
 
-    function test_FulfillMatch_RevertDoubleUseProof() public {
-        bytes32 medHash = keccak256(abi.encodePacked("Insulin"));
-        uint256 expiry = block.timestamp + 1 days;
+    function testFuzz_createListing_validExpiry(uint64 offset) public {
+        offset = uint64(bound(offset, 1, engine.MAX_LISTING_DURATION()));
+        vm.prank(everest);
+        uint256 id = engine.createListing(COMMITMENT, uint64(block.timestamp) + offset);
+        assertTrue(engine.isOpen(id));
+    }
 
-        vm.prank(pharmacyA);
-        matchingEngine.createListing(medHash, expiry);
+    function test_revert_createListing_whenPaused() public {
+        vm.prank(admin);
+        engine.pause();
+        vm.prank(everest);
+        vm.expectRevert(Pausable.EnforcedPause.selector);
+        engine.createListing(COMMITMENT, uint64(block.timestamp + 1 days));
+    }
 
-        bytes32 proof = keccak256(abi.encodePacked("SHARED_PROOF"));
+    // ------------------------------------------------------------------ cancelListing
 
-        vm.prank(pharmacyB);
-        matchingEngine.fulfillMatch(0, proof);
+    function test_cancel_bySupplier() public {
+        uint256 id = _list(everest);
+        vm.prank(everest);
+        engine.cancelListing(id);
+        assertFalse(engine.isOpen(id));
+    }
 
-        // Try to create another listing and use the exact same proof (Replay attack simulation)
-        bytes32 medHash2 = keccak256(abi.encodePacked("Metformin"));
-        vm.prank(pharmacyA);
-        matchingEngine.createListing(medHash2, expiry);
+    function test_cancel_allowedWhilePaused() public {
+        uint256 id = _list(everest);
+        vm.prank(admin);
+        engine.pause();
+        vm.prank(everest);
+        engine.cancelListing(id); // suppliers can always withdraw
+    }
 
-        vm.prank(pharmacyB);
-        vm.expectRevert("Compliance proof already utilized");
-        matchingEngine.fulfillMatch(1, proof);
+    function test_revert_cancel_byOther() public {
+        uint256 id = _list(everest);
+        vm.prank(alpha);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.NotSupplier.selector, id));
+        engine.cancelListing(id);
+    }
+
+    function test_revert_cancel_nonexistent() public {
+        vm.prank(everest);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.NotSupplier.selector, 99));
+        engine.cancelListing(99);
+    }
+
+    function test_revert_cancel_twice() public {
+        uint256 id = _list(everest);
+        vm.startPrank(everest);
+        engine.cancelListing(id);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                PharmacyMatchingEngine.NotActive.selector, id, PharmacyMatchingEngine.Status.Cancelled
+            )
+        );
+        engine.cancelListing(id);
+        vm.stopPrank();
+    }
+
+    // ------------------------------------------------------------------ fulfillMatch
+
+    function test_fulfil_mintsTicketToSupplier() public {
+        uint256 id = _list(everest);
+        bytes32 n = _fulfil(id, alpha);
+
+        (,, PharmacyMatchingEngine.Status status,) = engine.listings(id);
+        assertEq(uint8(status), uint8(PharmacyMatchingEngine.Status.Fulfilled));
+        assertTrue(engine.nullifierUsed(n));
+        assertEq(ticket.ownerOf(id), everest);
+        assertEq(ticket.recipientOf(id), alpha);
+    }
+
+    function test_revert_fulfil_invalidProof() public {
+        uint256 id = _list(everest);
+        vm.prank(alpha);
+        vm.expectRevert(PharmacyMatchingEngine.InvalidProof.selector);
+        engine.fulfillMatch(id, _nullifier(id, alpha), hex"deadbeef");
+    }
+
+    /// A proof copied from the mempool by another verified pharmacy must not work for them.
+    function test_revert_fulfil_frontRunWithStolenProof() public {
+        address thief = makeAddr("thief");
+        _register(thief);
+        uint256 id = _list(everest);
+        bytes32 n = _nullifier(id, alpha);
+        bytes memory alphasProof = verifier.proofFor(COMMITMENT, n, alpha);
+
+        vm.prank(thief);
+        vm.expectRevert(PharmacyMatchingEngine.InvalidProof.selector);
+        engine.fulfillMatch(id, n, alphasProof);
+    }
+
+    function test_revert_fulfil_proofForOtherListing() public {
+        uint256 id0 = _list(everest);
+        vm.prank(everest);
+        uint256 id1 = engine.createListing(keccak256("other"), uint64(block.timestamp + 1 days));
+        bytes32 n = _nullifier(id0, alpha);
+        bytes memory proofFor0 = verifier.proofFor(COMMITMENT, n, alpha);
+
+        vm.prank(alpha);
+        vm.expectRevert(PharmacyMatchingEngine.InvalidProof.selector);
+        engine.fulfillMatch(id1, n, proofFor0);
+    }
+
+    function test_revert_fulfil_nullifierReplay() public {
+        uint256 id0 = _list(everest);
+        uint256 id1 = _list(everest); // same commitment, e.g. relisted stock
+        bytes32 n = _fulfil(id0, alpha);
+        bytes memory proof = verifier.proofFor(COMMITMENT, n, alpha);
+
+        vm.prank(alpha);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.NullifierAlreadyUsed.selector, n));
+        engine.fulfillMatch(id1, n, proof);
+    }
+
+    function test_revert_fulfil_twice() public {
+        uint256 id = _list(everest);
+        _fulfil(id, alpha);
+        address boots = makeAddr("boots");
+        _register(boots);
+        bytes32 n = _nullifier(id, boots);
+        bytes memory proof = verifier.proofFor(COMMITMENT, n, boots);
+        vm.prank(boots);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                PharmacyMatchingEngine.NotActive.selector, id, PharmacyMatchingEngine.Status.Fulfilled
+            )
+        );
+        engine.fulfillMatch(id, n, proof);
+    }
+
+    function test_revert_fulfil_ownListing() public {
+        uint256 id = _list(everest);
+        bytes32 n = _nullifier(id, everest);
+        bytes memory proof = verifier.proofFor(COMMITMENT, n, everest);
+        vm.prank(everest);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.SelfFulfilment.selector, id));
+        engine.fulfillMatch(id, n, proof);
+    }
+
+    function test_revert_fulfil_expired() public {
+        uint256 id = _list(everest);
+        (, uint64 expiresAt,,) = engine.listings(id);
+        vm.warp(uint256(expiresAt) + 1);
+        bytes32 n = _nullifier(id, alpha);
+        bytes memory proof = verifier.proofFor(COMMITMENT, n, alpha);
+        vm.prank(alpha);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.ListingExpired.selector, id));
+        engine.fulfillMatch(id, n, proof);
+        assertFalse(engine.isOpen(id));
+    }
+
+    function test_revert_fulfil_supplierRevokedAfterListing() public {
+        uint256 id = _list(everest);
+        vm.prank(admin);
+        registry.revoke(everest);
+        bytes32 n = _nullifier(id, alpha);
+        bytes memory proof = verifier.proofFor(COMMITMENT, n, alpha);
+        vm.prank(alpha);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.NotVerifiedPharmacy.selector, everest));
+        engine.fulfillMatch(id, n, proof);
+    }
+
+    function test_revert_fulfil_unverifiedCaller() public {
+        uint256 id = _list(everest);
+        vm.prank(outsider);
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.NotVerifiedPharmacy.selector, outsider));
+        engine.fulfillMatch(id, bytes32(0), "");
+    }
+
+    // ------------------------------------------------------------------ confirmDelivery
+
+    function test_confirmDelivery_completesAndBurns() public {
+        uint256 id = _list(everest);
+        _fulfil(id, alpha);
+        vm.prank(alpha);
+        engine.confirmDelivery(id);
+
+        (,, PharmacyMatchingEngine.Status status,) = engine.listings(id);
+        assertEq(uint8(status), uint8(PharmacyMatchingEngine.Status.Completed));
+        assertEq(ticket.balanceOf(everest), 0);
+        assertEq(ticket.recipientOf(id), address(0));
+    }
+
+    function test_revert_confirmDelivery_notRecipient() public {
+        uint256 id = _list(everest);
+        _fulfil(id, alpha);
+        vm.prank(everest); // supplier cannot mark its own delivery as received
+        vm.expectRevert(abi.encodeWithSelector(PharmacyMatchingEngine.NotRecipient.selector, id));
+        engine.confirmDelivery(id);
+    }
+
+    function test_revert_confirmDelivery_beforeFulfilment() public {
+        uint256 id = _list(everest);
+        vm.prank(alpha);
+        vm.expectRevert(
+            abi.encodeWithSelector(PharmacyMatchingEngine.NotActive.selector, id, PharmacyMatchingEngine.Status.Active)
+        );
+        engine.confirmDelivery(id);
+    }
+
+    // ------------------------------------------------------------------ admin
+
+    function test_setVerifier_onlyOwner() public {
+        MockComplianceVerifier v2 = new MockComplianceVerifier();
+        vm.prank(outsider);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, outsider));
+        engine.setVerifier(IComplianceVerifier(address(v2)));
+
+        vm.prank(admin);
+        engine.setVerifier(IComplianceVerifier(address(v2)));
+        assertEq(address(engine.verifier()), address(v2));
+    }
+
+    function test_revert_setVerifier_zero() public {
+        vm.prank(admin);
+        vm.expectRevert(PharmacyMatchingEngine.ZeroAddress.selector);
+        engine.setVerifier(IComplianceVerifier(address(0)));
     }
 }
