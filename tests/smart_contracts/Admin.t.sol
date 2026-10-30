@@ -117,6 +117,6 @@ contract AdminTest is Base {
     }
 
     function test_inventory_verifyItem_unknownPharmacy() public view {
-        assertFalse(inventory.verifyItem(outsider, bytes32("x"), 1, bytes32(0), new bytes32[](0)));
+        assertFalse(inventory.verifyItem(outsider, keccak256("x"), 1, bytes32(0), new bytes32[](0)));
     }
 }
