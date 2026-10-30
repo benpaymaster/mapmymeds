@@ -1,0 +1,14 @@
+{
+  "name": "mapmymeds-subgraph",
+  "private": true,
+  "scripts": {
+    "abis": "for c in PharmacyRegistry PharmacyMatchingEngine SettlementTicket PharmacyInventory PharmacyNames; do jq '.abi' ../out/$c.sol/$c.json > abis/$c.json; done",
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy mapmymeds-base-sepolia"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "^0.97.0",
+    "@graphprotocol/graph-ts": "^0.38.0"
+  }
+}

@@ -1,0 +1,9 @@
+# Example witness: Everest lists 100 units of an uncontrolled medicine; Alpha requests 40.
+drug_code = "320000000"
+schedule = "6"
+quantity = "100"
+salt = "0x1f2e3d4c5b6a79880011223344556677"
+requested = "40"
+commitment = "0x0dc893058f58ff8771ef7e678a4bc6887819165798d7ed66db8050de8e2dcdd9"
+nullifier = "0x09c1dbc03503add04fdef3d86afa397f795308c122075ae8db09c6b87125eab1"
+recipient = "0x84bfba8f12eb09a3963b62c55ad2893343e93ecc"

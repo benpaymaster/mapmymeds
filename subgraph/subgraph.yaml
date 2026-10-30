@@ -1,0 +1,112 @@
+specVersion: 1.2.0
+description: MapMyMeds - privacy-preserving pharmacy stock matching on Base
+repository: https://github.com/benpaymaster/mapmymeds
+schema:
+  file: ./schema.graphql
+# Replace the zero addresses and start blocks with the values printed by script/Deploy.s.sol.
+dataSources:
+  - kind: ethereum
+    name: PharmacyRegistry
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: PharmacyRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities: [Pharmacy, ProtocolStats]
+      abis:
+        - name: PharmacyRegistry
+          file: ./abis/PharmacyRegistry.json
+      eventHandlers:
+        - event: PharmacyRegistered(indexed address,indexed bytes32,uint64)
+          handler: handlePharmacyRegistered
+        - event: PharmacyRevoked(indexed address)
+          handler: handlePharmacyRevoked
+        - event: FeePaid(indexed address,indexed address,uint256)
+          handler: handleFeePaid
+      file: ./src/registry.ts
+  - kind: ethereum
+    name: PharmacyNames
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: PharmacyNames
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities: [Pharmacy]
+      abis:
+        - name: PharmacyNames
+          file: ./abis/PharmacyNames.json
+      eventHandlers:
+        - event: NameIssued(indexed address,indexed bytes32,string)
+          handler: handleNameIssued
+      file: ./src/names.ts
+  - kind: ethereum
+    name: PharmacyMatchingEngine
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: PharmacyMatchingEngine
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities: [Listing, ProtocolStats]
+      abis:
+        - name: PharmacyMatchingEngine
+          file: ./abis/PharmacyMatchingEngine.json
+      eventHandlers:
+        - event: ListingCreated(indexed uint256,indexed address,bytes32,uint64)
+          handler: handleListingCreated
+        - event: ListingCancelled(indexed uint256)
+          handler: handleListingCancelled
+        - event: MatchFulfilled(indexed uint256,indexed address,indexed address,bytes32)
+          handler: handleMatchFulfilled
+        - event: DeliveryConfirmed(indexed uint256,indexed address)
+          handler: handleDeliveryConfirmed
+      file: ./src/engine.ts
+  - kind: ethereum
+    name: SettlementTicket
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: SettlementTicket
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities: [Listing]
+      abis:
+        - name: SettlementTicket
+          file: ./abis/SettlementTicket.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTicketTransfer
+      file: ./src/ticket.ts
+  - kind: ethereum
+    name: PharmacyInventory
+    network: base-sepolia
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: PharmacyInventory
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities: [Snapshot, Pharmacy]
+      abis:
+        - name: PharmacyInventory
+          file: ./abis/PharmacyInventory.json
+      eventHandlers:
+        - event: SnapshotUpdated(indexed address,bytes32,uint64)
+          handler: handleSnapshotUpdated
+      file: ./src/inventory.ts

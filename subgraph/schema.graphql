@@ -1,0 +1,55 @@
+# MapMyMeds subgraph: everything the frontend needs without reading contract storage directly.
+# No medicine names exist onchain, so none exist here either: listings expose commitments only.
+
+type Pharmacy @entity(immutable: false) {
+  id: Bytes! # wallet address
+  premisesCommitment: Bytes!
+  validUntil: BigInt!
+  revoked: Boolean!
+  ensLabel: String # e.g. "everest-bramley" -> everest-bramley.mapmymeds.eth
+  feePaidWei: BigInt!
+  registeredAt: BigInt!
+  attestations: Int!
+  listings: [Listing!]! @derivedFrom(field: "supplier")
+  received: [Listing!]! @derivedFrom(field: "recipient")
+  latestSnapshot: Snapshot
+}
+
+enum ListingStatus {
+  Active
+  Cancelled
+  Fulfilled
+  Completed
+}
+
+type Listing @entity(immutable: false) {
+  id: ID! # listing ID (also the settlement ticket ID)
+  supplier: Pharmacy!
+  commitment: Bytes!
+  expiresAt: BigInt!
+  status: ListingStatus!
+  recipient: Pharmacy
+  nullifier: Bytes
+  ticketHolder: Bytes
+  createdAt: BigInt!
+  fulfilledAt: BigInt
+  completedAt: BigInt
+  createdTx: Bytes!
+}
+
+type Snapshot @entity(immutable: true) {
+  id: Bytes! # tx hash + log index
+  pharmacy: Pharmacy!
+  root: Bytes!
+  updatedAt: BigInt!
+}
+
+type ProtocolStats @entity(immutable: false) {
+  id: ID! # "global"
+  pharmacies: Int!
+  listings: Int!
+  fulfilled: Int!
+  completed: Int!
+  cancelled: Int!
+  feesWei: BigInt!
+}
