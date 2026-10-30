@@ -2,6 +2,5 @@
 name = "transfer_compliance"
 type = "bin"
 authors = ["Adegbenga (Ben) Ogungbeje"]
-compiler_version = ">=1.0.0-beta.15"
 
 [dependencies]
