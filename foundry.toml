@@ -22,8 +22,13 @@ depth = 100
 fail_on_revert = true
 
 [lint]
-# Public immutables read better as registry() than REGISTRY() for integrators.
-exclude_lints = ["screaming-snake-case-immutable"]
+# Each exclusion is a deliberate design decision, documented in docs/SECURITY_REVIEW.md:
+# - screaming-snake-case-immutable: registry() reads better than REGISTRY() for integrators
+# - block-timestamp: expiry windows are hours to months; validator drift of seconds is irrelevant
+# - unsafe-oz-erc721-mint: SettlementTicket uses _mint on purpose so no callback (reentrancy path) exists
+exclude_lints = ["screaming-snake-case-immutable", "block-timestamp", "unsafe-oz-erc721-mint"]
+# Lint production code only; tests and scripts use cheatcodes that trip style lints by design.
+ignore = ["tests/**", "script/**"]
 
 [rpc_endpoints]
 base_sepolia = "${BASE_SEPOLIA_RPC_URL}"

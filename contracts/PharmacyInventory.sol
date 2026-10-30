@@ -47,6 +47,8 @@ contract PharmacyInventory is Ownable2Step, Pausable {
         if (root == bytes32(0)) revert ZeroValue();
         if (!registry.isVerifiedPharmacy(msg.sender)) revert NotVerifiedPharmacy(msg.sender);
 
+        // casting to uint64 is safe: timestamps fit in uint64 until the year 584,942,417,355
+        // forge-lint: disable-next-line(unsafe-typecast)
         uint64 nowTs = uint64(block.timestamp);
         snapshots[msg.sender] = Snapshot({root: root, updatedAt: nowTs});
         emit SnapshotUpdated(msg.sender, root, nowTs);
